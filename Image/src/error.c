@@ -17,3 +17,10 @@ void file_error(char *s)
 	fprintf(stderr, "Couldn't open file: %s\n", s);
 	exit(0);
 }
+
+/* function_error(__FUNCTION__)*/
+void function_error(char *s)
+{
+	fprintf(stderr, "Error happen in function: %s\n", s);
+	exit(0);
+}

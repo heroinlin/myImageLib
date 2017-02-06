@@ -34,6 +34,16 @@ extern "C" {
 	*/
 	void file_error(char *s);
 
+	/**
+	* function_error - print function error information.
+	*
+	* Parameters:
+	* @s ------ the name of open file .
+	* Return:
+	* none
+	*/
+	void function_error(char *s);
+
 #ifdef __cplusplus
 }
 #endif
