@@ -1,12 +1,16 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef MY_MATRIX_H
+#define MY_MATRIX_H
 #include "elem_type.h"
 #include "my_error.h"
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 	//row * col matrix
-	typedef struct matrix
+	typedef struct matrix_s
 	{
 		//the row of matrix
 		int row;
@@ -14,7 +18,7 @@ extern "C" {
 		int col;
 		//the data of matrix
 		f32_t* data;
-	}matrix_st,*matrix_pst;
+	}matrix_t,*matrix_pst;
 
 	/**
 	* get_matrix_row - get the row of the matrix
@@ -115,7 +119,7 @@ extern "C" {
 	* Return:
 	* None
 	*/
-	extern void free_matrix(matrix_pst mat);
+	extern u8_t free_matrix(matrix_pst mat);
 
 	/**
 	* get_matrix_n_row - get the data of n-th row 
