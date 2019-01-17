@@ -1,7 +1,7 @@
-#include "ScanningMethod.h"
-Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIFF_THR)
+#include "scanning_method.h"
+image_t* scanning_method(image_t* img, float* x0, float* y0, float* r, float GRAY_DIFF_THR)
 {
-	Image* imgTemp;
+	image_t* img_temp;
 	int n_left;
 	int n_right;
 	int n_top;
@@ -13,7 +13,7 @@ Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIF
 	//Looking for left tangent of fisheye image
 	for (int i = 0; i < img->width; i++)
 	{
-		ExtremeCol(img, &n_max, &n_min, i);
+		extreme_col(img, &n_max, &n_min, i);
 		if ((n_max - n_min) > GRAY_DIFF_THR)
 		{
 			n_left = i;
@@ -25,7 +25,7 @@ Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIF
 	for (int i = img->width - 1; i >= 0; i--)
 	{
 
-		ExtremeCol(img, &n_max, &n_min, i);
+		extreme_col(img, &n_max, &n_min, i);
 		if ((n_max - n_min) > GRAY_DIFF_THR)
 		{
 			n_right = i;
@@ -37,7 +37,7 @@ Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIF
 	for (int i = 0; i < img->height; i++)
 	{
 
-		ExtremeRow(img, &n_max, &n_min, i);
+		extreme_row(img, &n_max, &n_min, i);
 		if ((n_max - n_min) > GRAY_DIFF_THR)
 		{
 			n_top = i;
@@ -49,7 +49,7 @@ Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIF
 	for (int i = img->height - 1; i >= 0; i--)
 	{
 
-		ExtremeRow(img, &n_max, &n_min, i);
+		extreme_row(img, &n_max, &n_min, i);
 		if ((n_max - n_min) > GRAY_DIFF_THR)
 		{
 			n_bottom = i;
@@ -64,12 +64,12 @@ Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIF
 	else
 	{
 
-		imgTemp = CreateImage(set_img_size(n_right - n_left, n_bottom - n_top), IPL_DEPTH_8U, 3);
+		img_temp = image_create(image_set_size(n_right - n_left, n_bottom - n_top), IPL_DEPTH_8U, 3);
 
-		Img_Crop(img, imgTemp, n_left , n_top, n_right - n_left, n_bottom - n_top);
-		Image* imgCircle = Standard_circle(imgTemp);
+		image_crop(img, img_temp, n_left , n_top, n_right - n_left, n_bottom - n_top);
+		image_t* img_circle = standard_circle(img_temp);
 
-		ReleaseImage(imgTemp);
+		image_release(img_temp);
 
 		//Calculate the fisheye image center coordinates and radius 
 		*x0 = 1.0 * (n_left + n_right) / 2;
@@ -77,85 +77,85 @@ Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIF
 		float r1 = 1.0 * (n_right - n_left) / 2;
 		float r2 = 1.0 * (n_bottom - n_top) / 2;
 		*r = max(r1, r2);
-		return imgCircle;
+		return img_circle;
 
 	}
 }
 
-void ExtremeRow(Image* img, float* maxRow, float* minRow, int row)
+void extreme_row(image_t* img, float* max_row, float* min_row, int row)
 {
-	float maxTemp;
-	float minTemp;
+	float max_temp;
+	float min_temp;
 
 	float n_temp;
-	maxTemp = RGB_to_gray(img, 0, row);
-	minTemp = RGB_to_gray(img, 0, row);
+	max_temp = rgb_to_gray(img, 0, row);
+	min_temp = rgb_to_gray(img, 0, row);
 
 	for (int i = 0; i < img->width; i++)
 	{
-		n_temp = RGB_to_gray(img, i, row);
-		if (maxTemp < n_temp)
-			maxTemp = n_temp;
-		if (minTemp > n_temp)
-			minTemp = n_temp;
+		n_temp = rgb_to_gray(img, i, row);
+		if (max_temp < n_temp)
+			max_temp = n_temp;
+		if (min_temp > n_temp)
+			min_temp = n_temp;
 	}
 
-	*maxRow = maxTemp;
-	*minRow = minTemp;
+	*max_row = max_temp;
+	*min_row = min_temp;
 
 }
 
-void ExtremeCol(Image* img, float* maxCol, float* minCol, int col)
+void extreme_col(image_t* img, float* max_col, float* min_col, int col)
 {
-	float maxTemp;
-	float minTemp;
+	float max_temp;
+	float min_temp;
 
 	float n_temp;
-	maxTemp = RGB_to_gray(img, col, 0);
-	minTemp = RGB_to_gray(img, col, 0);
+	max_temp = rgb_to_gray(img, col, 0);
+	min_temp = rgb_to_gray(img, col, 0);
 
 	for (int i = 0; i < img->height; i++)
 	{
-		n_temp = RGB_to_gray(img, col, i);
-		if (maxTemp < n_temp)
-			maxTemp = n_temp;
-		if (minTemp > n_temp)
-			minTemp = n_temp;
+		n_temp = rgb_to_gray(img, col, i);
+		if (max_temp < n_temp)
+			max_temp = n_temp;
+		if (min_temp > n_temp)
+			min_temp = n_temp;
 	}
 
-	*maxCol = maxTemp;
-	*minCol = minTemp;
+	*max_col = max_temp;
+	*min_col = min_temp;
 
 }
 
-float RGB_to_gray(Image* img, int x, int y)
+float rgb_to_gray(image_t* img, int x, int y)
 {
 	float value = 0;
-	int channel = get_img_channel(img);
+	int channel = image_get_depth(img);
 	float scale[] = { 0.587, 0.299, 0.114 };
 	for (int k = 0; k < channel; k++)
 	{
-		value += scale[k] * (float)get_pixel(img, x, y, k);
+		value += scale[k] * (float)image_get_pixel_value(img, x, y, k);
 	}
 
 	return value;
 
 }
 
-Image* Standard_circle(Image* img)
+image_t* standard_circle(image_t* img)
 {
 	float u = 1.0*img->width / 2;
 	float v = 1.0*img->height / 2;
 	float beta = 1.0 * img->width / img->height;
-	Image* imgOut;
+	image_t* img_out;
 	if (img->width < img->height)
 
-		imgOut = CreateImage(set_img_size(min(img->width, img->height), min(img->width, img->height)), IPL_DEPTH_8U, 3);
+		img_out = image_create(image_set_size(min(img->width, img->height), min(img->width, img->height)), IPL_DEPTH_8U, 3);
 	else
-		imgOut = CreateImage(set_img_size(max(img->width, img->height), max(img->width, img->height)), IPL_DEPTH_8U, 3);
+		img_out = image_create(image_set_size(max(img->width, img->height), max(img->width, img->height)), IPL_DEPTH_8U, 3);
 
-	Img_Warp(img, imgOut);
+	image_warp(img, img_out);
 
-	return imgOut;
+	return img_out;
 
 }

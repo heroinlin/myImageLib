@@ -1,37 +1,37 @@
-#ifndef SCANNINGMETHOD_H
-#define SCANNINGMETHOD_H
+#ifndef SCANNING_METHOD_H
+#define SCANNING_METHOD_H
 #include "image.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 	/**
-	* ExtremeRow - looking for extreme value of image of some row,including the maximum and the minimum.
+	* extreme_row - looking for extreme value of image of some row,including the maximum and the minimum.
 	*
 	* Parameters:
 	* @img ------ the image itself.
-	* @maxRow -- the maximum of some row
-	* @minRow -- the minimum of some row
+	* @max_row -- the maximum of some row
+	* @min_row -- the minimum of some row
 	* @row -- the row want to find the extreme value
 	* Return:
 	* none
 	*
 	*/
-	void ExtremeRow(Image* img, float* maxRow, float* minRow, int row);
+	void extreme_row(image_t* img, float* max_row, float* min_row, int row);
 
 	/**
-	* ExtremeCol - looking for extreme value of image of some column,including the maximum and the minimum.
+	* extreme_col - looking for extreme value of image of some column,including the maximum and the minimum.
 	*
 	* Parameters:
 	* @img ------ the image itself.
-	* @maxCol -- the maximum of some column
-	* @minCol -- the minimum of some column
+	* @max_col -- the maximum of some column
+	* @min_col -- the minimum of some column
 	* @col -- the column want to find the extreme value
 	* Return:
 	* none
 	*
 	*/
-	void ExtremeCol(Image* img, float* maxCol, float* minCol, int col);
+	void extreme_col(image_t* img, float* max_col, float* min_col, int col);
 
 	/**
 	* RGB_to_gray - Calculate the brightness of the pixel
@@ -44,10 +44,10 @@ extern "C" {
 	* the brightness of the pixel
 	*
 	*/
-	float RGB_to_gray(Image* img, int x, int y);
+	float rgb_to_gray(image_t* img, int x, int y);
 
 	/**
-	* Standard_circle - Oval transformation for the standard circle
+	* standard_circle - Oval transformation for the standard circle
 	*
 	* Parameters:
 	* @img ------ the Oval image.
@@ -55,10 +55,10 @@ extern "C" {
 	* the standard circle image
 	*
 	*/
-	Image* Standard_circle(Image* img);
+	image_t* standard_circle(image_t* img);
 
 	/**
-	* ScanningMethod - Calibration the center and radius of fisheye image 
+	* scanning_method - Calibration the center and radius of fisheye image 
 	*
 	* Parameters:
 	* @img ------ the image itself.
@@ -70,7 +70,7 @@ extern "C" {
 	* fisheye image after shearing as standard circle
 	*
 	*/
-	Image* ScanningMethod(Image* img, float* x0, float* y0, float* r, float GRAY_DIFF_THR);
+	image_t* scanning_method(image_t* img, float* x0, float* y0, float* r, float GRAY_DIFF_THR);
 
 #ifdef __cplusplus
 }

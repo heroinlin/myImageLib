@@ -30,13 +30,16 @@
     <ClInclude Include="..\include\rectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ScanningMethod.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\my_error.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\matrix.h">
+    <ClInclude Include="..\include\mysse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\scanning_method.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\my_matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,13 +56,19 @@
     <ClCompile Include="..\src\rectangle.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Scanning_Method.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\error.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\matrix.c">
+    <ClCompile Include="..\src\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\mysse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\scanning_method.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\my_matrix.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

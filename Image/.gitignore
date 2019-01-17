@@ -1,0 +1,6 @@
+.vs/
+Debug/
+*.opensdf
+*.sdf
+*.db
+3rdparty/

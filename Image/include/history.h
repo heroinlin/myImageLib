@@ -3,20 +3,24 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
+#include "elem_type.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-	typedef struct History {
+
+
+	typedef struct histogram_s {
 		/* the bin of histogram */
 		int bin;
 		/* the range of histogram */
 		int ranges;
 		/* the data of histogram */
 		float *value;
-	}History;
+	}histogram_t;
+
 
 	/**
-	* GetHistBin - get the bin of the histogram
+	* histogram_get_bin - get the bin of the histogram
 	*
 	* Parameters:
 	* @hist - the histogram itself
@@ -24,13 +28,14 @@ extern "C" {
 	* Return:
 	* the bin of histogram.
 	*/
-	static __inline int GetHistBin(History *hist)
+	static __inline int histogram_get_bin(histogram_t *hist)
 	{
 		return hist->bin;
 	}
 
+
 	/**
-	* GetHistRange - get the range of the histogram
+	* histogram_get_range - get the range of the histogram
 	*
 	* Parameters:
 	* @hist - the histogram itself
@@ -38,13 +43,14 @@ extern "C" {
 	* Return:
 	* the range of histogram.
 	*/
-	static __inline int GetHistRange(History *hist)
+	static __inline int histogram_get_range(histogram_t *hist)
 	{
 		return hist->ranges;
 	}
 
+
 	/**
-	* GetHistValue - get the value of the histogram in a bin.
+	* histogram_get_value - get the value of the histogram in a bin.
 	*
 	* Parameters:
 	* @hist - the histogram itself
@@ -53,41 +59,46 @@ extern "C" {
 	* Return:
 	* the value of histogram in a bin.
 	*/
-	static __inline float GetHistValue(History *hist, int bin_index)
+	static __inline float histogram_get_value(histogram_t *hist, int bin_index)
 	{
 		return hist->value[bin_index];
 	}
 
+
 	/**
-	* SetHistValue - set the value of the histogram in a bin.
+	* histogram_set_value - set the value of the histogram in a bin.
 	*
 	* Parameters:
 	* @hist - the histogram itself
 	* @bin_index - the index of bin which want to set the value.
-	* @value - new value 
+	* @value - new value
 	*
 	* Return:
 	* none
 	*/
-	static __inline void SetHistValue(History *hist, int bin_index, float value)
+	static __inline void histogram_set_value(histogram_t *hist,
+		int bin_index,
+		float value)
 	{
 		hist->value[bin_index] = value;
 	}
 
+
 	/**
-	* CreateHistory - create the History structure
+	* histogram_create - create the histogram_t structure
 	*
 	* Parameters:
 	* @bin ----- the bin of histogram
 	* @ranges -- the range of histogram
 	*
 	* Return:
-	* The pointer to the History
+	* The pointer to the histogram_t
 	*/
-	extern History *CreateHistory(int bin, int ranges);
+	extern histogram_t *histogram_create(int bin, int ranges);
+
 
 	/**
-	* ReleaseHistory - release the History
+	* histogram_release - release the histogram_t
 	*
 	* Parameters:
 	* @hist - the histogram itself
@@ -95,10 +106,11 @@ extern "C" {
 	* Return:
 	*none
 	*/
-	extern void ReleaseHistory(History *hist);
+	extern u8_t histogram_release(histogram_t *hist);
+
 
 	/**
-	* ThreshHistory - Clear all histogram bins that are below the threshold 
+	* ThreshHistory - Clear all histogram bins that are below the threshold
 	*
 	* Parameters:
 	* @hist	------ the source histogram
@@ -107,11 +119,11 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	
-	extern void ThreshHist(History *hist, double threshold);
+	extern void histogram_threshold(histogram_t *hist, double threshold);
+
 
 	/**
-	* NormalizeHist - Normalizes histogram by dividing all bins by sum of the bins, multiplied by <factor>.
+	* histogram_normalize - Normalizes histogram by dividing all bins by sum of the bins, multiplied by <factor>.
 	*                 After that sum of histogram bins is equal to <factor>
 	*
 	* Parameters:
@@ -121,10 +133,11 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	extern void NormalizeHist(History *hist, double factor);
+	extern void histogram_normalize(histogram_t *hist, double factor);
+
 
 	/**
-	* minmax_hist - Finds indices and values of minimum and maximum histogram bins
+	* histogram_min_max - Finds indices and values of minimum and maximum histogram bins
 	*
 	* Parameters:
 	* @hist	--- the source histogram
@@ -136,15 +149,20 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	extern void minmax_hist(History *hist, int *minval, int *maxval, float *minval_p, float *maxval_p);
+	extern void histogram_min_max(histogram_t *hist,
+		int *minval,
+		int *maxval,
+		float *minval_p,
+		float *maxval_p);
 
-/*the compare method to histograms */
+
+	/*the compare method to histograms */
 #define CHISQR 1 
 #define CORREL 2
 #define INTERSECT 3
 #define BHATTACHARYYA 4
 	/**
-	* CompareHist - Compares two histogram 
+	* histogram_compare - Compares two histogram
 	*
 	* Parameters:
 	* @hist1	--- the first histogram
@@ -153,18 +171,22 @@ extern "C" {
 	*
 	* Return:
 	* compare difference value
-	* Note: 
+	* Note:
 	* @1. The range of method is [1,4]
 	* @2. method 1 is CHISQR,2 is CORREL,3 is INTERSECT,4 is BHATTACHARYYA
 	*/
-	extern double CompareHist(History *hist1, History *hist2, int method);
+	extern double histogram_compare(histogram_t *hist1,
+		histogram_t *hist2,
+		int method);
+
 
 #define IMAGE
 #ifdef IMAGE
 #include "image.h"
 
+
 	/**
-	* clachist - Calculates  histogram of image
+	* histogram_calculate - Calculates  histogram of image
 	*
 	* Parameters:
 	* @img	--- the image itself
@@ -173,7 +195,8 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	extern void clachist(Image *img, History *hist);
+	extern void histogram_calculate(image_t *img, histogram_t *hist);
+
 
 #endif
 #ifdef __cplusplus

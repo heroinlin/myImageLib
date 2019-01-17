@@ -1,71 +1,98 @@
 #include "history.h"
 
-History *CreateHistory(int bin, int ranges)
+
+histogram_t *histogram_create(int bin, int ranges)
 {
-	History *hist = 0;
-	hist = (History *)malloc(sizeof(History));
-	(*hist).value = (float*)malloc(bin*sizeof(float));
-	(*hist).bin = bin;
-	(*hist).ranges = ranges;
+	histogram_t *hist = 0;
+	hist = (histogram_t *)malloc(sizeof(histogram_t));
+	if (!hist){
+		return NULL;
+	}
+	hist->bin = bin;
+	hist->ranges = ranges;
+	hist->value = (float*)malloc(bin*sizeof(float));
+	if (!hist->value) {
+		free(hist);
+		hist = NULL;
+		return NULL;
+	}
 	return hist;
 }
 
-void ReleaseHistory(History *hist)
+
+u8_t histogram_release(histogram_t *hist)
 {
-	free((*hist).value);
-	free(hist);
+	if (!hist){
+		return 1;
+	}
+	if (hist->value){
+		free(hist->value);
+		hist->value = NULL;
+	}
+	if (hist){
+		free(hist);
+		hist = NULL;
+	}
+	return 1;
 }
 
-void NormalizeHist(History *hist, double factor)
+
+void histogram_normalize(histogram_t *hist, double factor)
 {
 	float pixel_num = 0;
-	int bin = GetHistBin(hist);
+	int bin = histogram_get_bin(hist);
 	float value = 0;
 	for (int i = 0; i < bin; i++)
 	{
-		pixel_num += GetHistValue(hist, i);
+		pixel_num += histogram_get_value(hist, i);
 	}
 	for (int i = 0; i < bin; i++)
 	{
-		value = GetHistValue(hist, i) / pixel_num;
-		SetHistValue(hist, i, value);
+		value = histogram_get_value(hist, i) / pixel_num;
+		histogram_set_value(hist, i, value);
 	}
 	/*for (int k = 0; k < bin; k++)
-		printf("hist_value[%d]=%f\n", k, GetHistValue(hist, k));*/
+	printf("hist_value[%d]=%f\n", k, histogram_get_value(hist, k));*/
 }
 
-void ThreshHist(History *hist, double threshold)
+
+void histogram_threshold(histogram_t *hist, double threshold)
 {
-	int bin = GetHistBin(hist);
+	int bin = histogram_get_bin(hist);
 	float value = 0;
 	for (int i = 0; i < bin; i++)
 	{
-		value = GetHistValue(hist, i);
+		value = histogram_get_value(hist, i);
 		if (value < threshold)
-			SetHistValue(hist, i, 0);
+			histogram_set_value(hist, i, 0);
 	}
 }
 
-void minmax_hist(History *hist, int *minval, int *maxval, float *minval_p, float *maxval_p)
+
+void histogram_min_max(histogram_t *hist,
+	int *minval,
+	int *maxval,
+	float *minval_p,
+	float *maxval_p)
 {
 	float pixel_num = 0;
-	int bin = GetHistBin(hist);
+	int bin = histogram_get_bin(hist);
 	float value = 0, min_value = 0, max_value = 0;
-	min_value = GetHistValue(hist, *minval);
-	max_value = GetHistValue(hist, *maxval);
+	min_value = histogram_get_value(hist, *minval);
+	max_value = histogram_get_value(hist, *maxval);
 	for (int i = 0; i < bin; i++)
 	{
-		value = GetHistValue(hist, i);
+		value = histogram_get_value(hist, i);
 		pixel_num += value;
 		if (value < min_value)
 		{
 			*minval = i;
-			min_value = GetHistValue(hist, *minval);
+			min_value = histogram_get_value(hist, *minval);
 		}
 		if (value > max_value)
 		{
 			*maxval = i;
-			max_value = GetHistValue(hist, *maxval);
+			max_value = histogram_get_value(hist, *maxval);
 		}
 	}
 	*minval_p = min_value / pixel_num;
@@ -73,20 +100,23 @@ void minmax_hist(History *hist, int *minval, int *maxval, float *minval_p, float
 
 }
 
-double CompareHist(History *hist1, History *hist2, int method)
+
+double histogram_compare(histogram_t *hist1,
+	histogram_t *hist2,
+	int method)
 {
-	assert(GetHistBin(hist1) == GetHistBin(hist2) && GetHistRange(hist1) == GetHistRange(hist2));
+	assert(histogram_get_bin(hist1) == histogram_get_bin(hist2) && histogram_get_range(hist1) == histogram_get_range(hist2));
 	assert(method == 1 || method == 2 || method == 3 || method == 4);
 	int j;
-	int len = GetHistBin(hist1);
+	int len = histogram_get_bin(hist1);
 	double result = 0;
 	double s1 = 0, s2 = 0, s11 = 0, s12 = 0, s22 = 0;
 	if (method == CHISQR)
 	{
 		for (j = 0; j < len; j++)
 		{
-			double a = GetHistValue(hist1, j) - GetHistValue(hist2, j);
-			double b = GetHistValue(hist1, j);
+			double a = histogram_get_value(hist1, j) - histogram_get_value(hist2, j);
+			double b = histogram_get_value(hist1, j);
 			if (fabs(b) > DBL_EPSILON)
 				result += a*a / b;
 		}
@@ -95,8 +125,8 @@ double CompareHist(History *hist1, History *hist2, int method)
 	{
 		for (j = 0; j < len; j++)
 		{
-			double a = GetHistValue(hist1, j);
-			double b = GetHistValue(hist2, j);
+			double a = histogram_get_value(hist1, j);
+			double b = histogram_get_value(hist2, j);
 
 			s12 += a*b;
 			s1 += a;
@@ -108,14 +138,14 @@ double CompareHist(History *hist1, History *hist2, int method)
 	else if (method == INTERSECT)
 	{
 		for (j = 0; j < len; j++)
-			result += min(GetHistValue(hist1, j), GetHistValue(hist2, j));
+			result += min(histogram_get_value(hist1, j), histogram_get_value(hist2, j));
 	}
 	else if (method == BHATTACHARYYA)
 	{
 		for (j = 0; j < len; j++)
 		{
-			double a = GetHistValue(hist1, j);
-			double b = GetHistValue(hist2, j);
+			double a = histogram_get_value(hist1, j);
+			double b = histogram_get_value(hist2, j);
 			result += sqrt(a*b);
 			s1 += a;
 			s2 += b;
@@ -126,7 +156,7 @@ double CompareHist(History *hist1, History *hist2, int method)
 
 	if (method == CORREL)
 	{
-		int  total = GetHistBin(hist1);
+		int  total = histogram_get_bin(hist1);
 		double scale = 1. / total;
 		double num = s12 - s1*s2*scale;
 		double denom2 = (s11 - s1*s1*scale)*(s22 - s2*s2*scale);
@@ -141,8 +171,11 @@ double CompareHist(History *hist1, History *hist2, int method)
 	return result;
 }
 
+
 #ifdef IMAGE
-void clachist(Image *img, History *hist)
+
+
+void histogram_calculate(image_t *img, histogram_t *hist)
 {
 
 	/*for (int k = 0; k < hist.bin; k++)
@@ -159,22 +192,31 @@ void clachist(Image *img, History *hist)
 
 	for (int k = 0; k < hist.bin; k++)
 	printf("hist_value[%d]=%f\n", k, hist.value[k]);*/
-	int bin = GetHistBin(hist);
-	int ranges = GetHistRange(hist);
-	int height = get_img_height(img);
-	int width = get_img_width(img);
+	int i, j, n;
+	float value;
+	int bin = histogram_get_bin(hist);
+	int ranges = histogram_get_range(hist);
+	assert(bin > 0 && ranges > 0);
+	int height = image_get_height(img);
+	int width = image_get_width(img);
 	for (int k = 0; k < bin; k++)
-		SetHistValue(hist, k, 0);
-	for (int i = 0; i < height; i++)
+		histogram_set_value(hist, k, 0);
+	for (i = 0; i < height; i++)
 	{
-		for (int j = 0; j < width; j++)
+		for (j = 0; j < width; j++)
 		{
-			int n = (int)get_pixel(img, j, i, 0);
-			n = n * bin / ranges;
-			SetHistValue(hist, n, GetHistValue(hist, n) + 1);
+			n = (int)image_get_pixel_value(img, j, i, 0);
+			n = n * (bin - 1) / ranges;
+			value = histogram_get_value(hist, n) + 1;
+			if (n<bin && n>-1)
+			{
+				histogram_set_value(hist, n, value);
+			}
 		}
 	}
-	//for (int k = 0; k < bin; k++)
-	//	printf("hist_value[%d]=%f\n", k, GetHistValue(hist, k));
+	/*for (int k = 0; k < bin; k++)
+		printf("hist_value[%d]=%f\n", k, histogram_get_value(hist, k));*/
 }
+	
+
 #endif

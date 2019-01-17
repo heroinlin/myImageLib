@@ -2,34 +2,44 @@
 #define  IMAGE_H
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "point.h"
+#include "mysse.h"
+#include "my_error.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 	typedef unsigned char uchar;
 
-	typedef struct Imagesize{
+
+	typedef struct image_size_s{
 		/* the width of image */
 		int width;
 		/* the height of image */
 		int height;
-	}Imagesize;
+	}image_size_t;
 
-	typedef struct Image
-	{
+
+	typedef struct image_s{
 		/* the channel of image */
-		int nChannels;
+		int channel;
 		/* the depth of image */
 		int depth;
 		/* the width of image */
 		int width;
 		/* the height of image */
 		int height;
+		/* the widthStep of image */
+		int widthstep;
 		/* the data of image */
-		char *imageData;
-	}Image;
+		uchar *imagedata;
+	}image_t;
+
 
 	/**
-	* get_img_width - get the width of the image
+	* image_get_width - get the width of the image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -37,13 +47,14 @@ extern "C" {
 	* Return:
 	* The width of image.
 	*/
-	static __inline int get_img_width(Image *img)
+	static __inline int image_get_width(image_t *img)
 	{
 		return img->width;
 	}
 
+
 	/**
-	* get_img_height - get the height of the image
+	* image_get_height - get the height of the image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -51,13 +62,14 @@ extern "C" {
 	* Return:
 	* The height of image.
 	*/
-	static __inline int get_img_height(Image *img)
+	static __inline int image_get_height(image_t *img)
 	{
 		return img->height;
 	}
 
+
 	/**
-	* get_img_channel - get the channel of the image
+	* image_get_channel - get the channel of the image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -65,13 +77,14 @@ extern "C" {
 	* Return:
 	* The channel of image.
 	*/
-	static __inline int get_img_channel(Image *img)
+	static __inline int image_get_channel(image_t *img)
 	{
-		return img->nChannels;
+		return img->channel;
 	}
 
+
 	/**
-	* get_img_depth - get the depth of the image
+	* image_get_depth - get the depth of the image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -79,13 +92,29 @@ extern "C" {
 	* Return:
 	* The depth of image.
 	*/
-	static __inline int get_img_depth(Image *img)
+	static __inline int image_get_depth(image_t *img)
 	{
 		return img->depth;
 	}
 
+
 	/**
-	* get_pixel - get the data at (x, y,c) of image
+	* image_get_widthStep - get the widthStep of the image
+	*
+	* Parameters:
+	* @img - the image itself
+	*
+	* Return:
+	* The widthStep of image.
+	*/
+	static __inline int image_get_widthstep(image_t *img)
+	{
+		return img->widthstep;
+	}
+
+
+	/**
+	* image_get_pixel_value - get the data at (x, y,c) of image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -96,37 +125,44 @@ extern "C" {
 	* Return:
 	* The pointer to data at (x, y, c) of image
 	*/
-	static __inline uchar get_pixel(Image *img, int x, int y, int c)
+	static __inline uchar image_get_pixel_value(image_t *img,
+		int x,
+		int y,
+		int c)
 	{
 		/* get value of the pixel that width = x, height = y,channel = c */
 		assert(x >= 0 && y >= 0 && c >= 0);
-		int step = img->width*img->nChannels;
-		return img->imageData[y*step + x*img->nChannels + c];
+		return img->imagedata[y*img->widthstep + x*img->channel + c];
 	}
 
+
 	/**
-	* set_pixel - set the data at (x, y,c) of image
+	* image_set_pixel_value - set the data at (x, y,c) of image
 	*
 	* Parameters:
 	* @img - the image itself
 	* @x --- the x-coordinate location
 	* @y --- the y-coordinate location
 	* @c --- the channel location
-	* @val - the new value 
+	* @val - the new value
 	*
 	* Return:
 	* none
 	*/
-	static __inline void set_pixel(Image *img, int x, int y, int c, int val)
+	static __inline void image_set_pixel_value(image_t *img,
+		int x,
+		int y,
+		int c,
+		int val)
 	{
 		/* set value = val to the pixel that width = x, height = y,channel = c */
 		assert(x >= 0 && y >= 0 && c >= 0);
-		int step = img->width*img->nChannels;
-		img->imageData[y*step + x*img->nChannels + c] = (uchar)val;
+		img->imagedata[y*img->widthstep + x*img->channel + c] = (uchar)val;
 	}
 
+
 	/**
-	* add_pixel - add the value to the data at (x, y,c) of image
+	* image_add_pixel_value - add the value to the data at (x, y,c) of image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -138,15 +174,19 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	static __inline void add_pixel(Image *img, int x, int y, int c, int val)
+	static __inline void image_add_pixel_value(image_t *img,
+		int x,
+		int y,
+		int c,
+		int val)
 	{
-		assert(x < get_img_width(img) && y < get_img_height(img) && c < get_img_channel(img));
-		int step = img->width*img->nChannels;
-		img->imageData[y*step + x*img->nChannels + c] += (uchar)val;
+		assert(x < image_get_width(img) && y < image_get_height(img) && c < image_get_channel(img));
+		img->imagedata[y*img->widthstep + x*img->channel + c] += (uchar)val;
 	}
 
+
 	/**
-	* mul_pixel - multiplies the value to the data at (x, y,c) of image
+	* image_mul_pixel_value - multiplies the value to the data at (x, y,c) of image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -158,15 +198,19 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	static __inline void mul_pixel(Image *img, int x, int y, int c, int val)
+	static __inline void image_mul_pixel_value(image_t *img,
+		int x,
+		int y,
+		int c,
+		int val)
 	{
-		assert(x < get_img_width(img) && y < get_img_height(img) && c < get_img_channel(img));
-		int step = img->width*img->nChannels;
-		img->imageData[y*step + x*img->nChannels + c] *= (uchar)val;
+		assert(x < image_get_width(img) && y < image_get_height(img) && c < image_get_channel(img));
+		img->imagedata[y*img->widthstep + x*img->channel + c] *= (uchar)val;
 	}
 
+
 	/**
-	* get_img_size - get the size of image
+	* image_get_size - get the size of image
 	*
 	* Parameters:
 	* @img - the image itself
@@ -174,34 +218,36 @@ extern "C" {
 	* Return:
 	* the size of image
 	*/
-	static __inline Imagesize get_img_size(Image *img)
+	static __inline image_size_t image_get_size(image_t *img)
 	{
-		Imagesize size;
-		size.width = get_img_width(img);
-		size.height = get_img_height(img);
+		image_size_t size;
+		size.width = image_get_width(img);
+		size.height = image_get_height(img);
 		return size;
 	}
 
+
 	/**
-	* set_img_size - set the size of image
+	* image_set_size - set the size of image
 	*
 	* Parameters:
-	* @width - new width of image 
+	* @width - new width of image
 	* @height - new height of image
 	*
 	* Return:
 	* new size of image
 	*/
-	static __inline  Imagesize set_img_size(int width, int height)
+	static __inline  image_size_t image_set_size(int width, int height)
 	{
-		Imagesize size;
+		image_size_t size;
 		size.width = width;
 		size.height = height;
 		return size;
 	}
 
+
 	/**
-	* CreateImage - create the image structure
+	* image_create - create the image structure
 	*
 	* Parameters:
 	* @size ----- the size of image
@@ -211,7 +257,8 @@ extern "C" {
 	* Return:
 	* The pointer to the image
 	*/
-	extern Image *CreateImage(Imagesize size, int depth, int channel);
+	extern image_t *image_create(image_size_t size, int depth, int channel);
+
 
 	/**
 	* Release - release the image
@@ -222,10 +269,11 @@ extern "C" {
 	* Return:
 	*none
 	*/
-	extern void ReleaseImage(Image *src);
+	extern uchar image_release(image_t *src);
+
 
 	/**
-	* CopyImage - copy src to dst image
+	* image_copy - copy src to dst image
 	*
 	* Parameters:
 	* @src - the source image
@@ -237,10 +285,11 @@ extern "C" {
 	* Note:
 	* @1. The alloc size of @dst must  equal to the size of @src.
 	*/
-	extern void CopyImage(Image *src, Image *dst);
+	extern void image_copy(image_t *src, image_t *dst);
+
 
 	/**
-	* Img_flip - flip image
+	* image_flip - flip image
 	*
 	* Parameters:
 	* @src - the source image
@@ -253,10 +302,11 @@ extern "C" {
 	* Note:
 	* 1.the range of @flip_code is{-1,0,1}. 0 is mirror horizontally,1 is mirror vertically, -1 is flip 180 degrees.
 	*/
-	extern void Img_flip(Image *src, int flip_code );
+	extern void image_flip(image_t *src, int flip_code);
+
 
 	/**
-	* Img_Grayscale - convert image to gray image
+	* image_grayscale - convert image to gray image
 	*
 	* Parameters:
 	* @src -  the source image, size of src must be  width * height * 3
@@ -265,10 +315,11 @@ extern "C" {
 	* Return:
 	* none
 	*/
-	extern void Img_Grayscale(Image *src, Image *gray);
+	extern void image_grayscale(image_t *src, image_t *gray);
+
 
 	/**
-	* Img_Abs_Diff - calculate the difference image of two images
+	* image_abs_diff - calculate the difference image of two images
 	*
 	* Parameters:
 	* @src1 - the first input image
@@ -280,10 +331,11 @@ extern "C" {
 	* Note:
 	* @1. src1 src2,and dst must have the same size and channel.
 	*/
-	extern void Img_Abs_Diff(Image *src1, Image *src2, Image *dst);
+	extern void image_abs_diff(image_t *src1, image_t *src2, image_t *dst);
+
 
 	/**
-	* Img_Threshold_Binary - convert the image to the binary one
+	* image_threshold_binary - convert the image to the binary one
 	*
 	* Parameters:
 	* @src	------ the source image
@@ -295,10 +347,13 @@ extern "C" {
 	* Note:
 	* @1. src1 and dst must have the same size and channel.
 	*/
-	extern void Img_Threshold_Binary(Image *src, Image *dst, double threshold);
+	extern void image_threshold_binary(image_t *src,
+		image_t *dst,
+		double threshold);
+
 
 	/**
-	* Img_And - 'and' operation of two images, dst = src1 & src2
+	* image_and - 'and' operation of two images, dst = src1 & src2
 	*
 	* Parameters:
 	* @src1 - the first input image
@@ -307,13 +362,12 @@ extern "C" {
 	*
 	* Return:
 	* none
-	* Note:
-	* @1.src1,src2,dst must have the same size and channel
 	*/
-	extern void Img_And(Image *src1, Image *src2, Image *dst);
+	extern void image_and(image_t *src1, image_t *src2, image_t *dst);
+
 
 	/**
-	* Img_Add - 'add' operation of two images,dst = src1 + src2
+	* image_add - 'add' operation of two images,dst = src1 + src2
 	*
 	* Parameters:
 	* @src1 - the first input image
@@ -322,13 +376,27 @@ extern "C" {
 	*
 	* Return:
 	* none
-	* Note:
-	* @1.src1,src2,dst must have the same size and channel
 	*/
-	extern void Img_Add(Image *src1, Image *src2, Image *dst);
+	extern void image_add(image_t *src1, image_t *src2, image_t *dst);
+
 
 	/**
-	* Img_Crop - crop rectangle on image
+	* image_interpolation - Bilinear interpolation
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @x  --- the x-coordinate of point after projection
+	* @y --- the y-coordinate of point after projection
+	* @c --- the channel of point after projection
+	* Return:
+	* the unsigned char value of pixel
+	*
+	*/
+	extern uchar image_interpolation(image_t *src, float x, float y, int c);
+
+
+	/**
+	* image_crop - crop rectangle on image
 	*
 	* Parameters:
 	* @src  --- the source image
@@ -349,10 +417,16 @@ extern "C" {
 	* @5. 0 <= x; x + width <= src.width;
 	* @6. 0 <= y; y + height <= src.height;
 	*/
-	extern void Img_Crop(Image *src, Image *dst, int x, int y, int width, int height);
+	extern void image_crop(image_t *src,
+		image_t *dst,
+		int x,
+		int y,
+		int width,
+		int height);
+
 
 	/**
-	* Img_Warp - warp the image
+	* image_warp - warp the image
 	*
 	* Parameters:
 	* @src  --- the source image
@@ -362,97 +436,318 @@ extern "C" {
 	* none
 	*
 	*/
-	extern void Img_Warp(Image *src, Image *dst);
+	extern void image_warp(image_t *src, image_t *dst);
 
 	/**
-	* Mask_three_frame_diff - Calculate the difference mask image of three images.
+	* image_warp - warp the image
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @dst  --- the output image after warping
+	* @src_width  --- the width of effective pixel in src image
+	* @src_height  --- the height of effective pixel in src image
+	* @dst_width  --- the width of effective pixel in dst image
+	* @dst_height  --- the height of effective pixel in dst image
+	*
+	* Return:
+	* none
+	*
+	*/
+	extern void image_warp1(image_t *src,
+		image_t *dst,
+		int src_width,
+		int src_height,
+		int dst_width,
+		int dst_height);
+
+
+	/**
+	* image_mask_three_frame_diff - Calculate the difference mask image of three images.
 	*
 	* Parameters:
 	* @src1 ------ the first input image
 	* @src2 ------ the second input image
 	* @src3 ------ the third input image
-	* @Imask ----- the output difference image which is  a mask image 
-	* @threshold - threshold value of binary 
+	* @Imask ----- the output difference image_t which is  a mask image
+	* @threshold - threshold value of binary
 	* Return:
 	* none
 	* Note:
 	* @1. src1 ,src2 ,src3 and dst must have the same size and channel.
 	*/
-	extern void Mask_three_frame_diff(Image *src1, Image *src2, Image *src3, Image *Imask, float threshold);
+	extern void image_mask_three_frame_diff(image_t *src1,
+		image_t *src2,
+		image_t *src3,
+		image_t *Imask,
+		float threshold);
+
 
 	/**
-	* Mask_backgroung_diff - Calculate the difference mask image between the current image and the background image.
+	* image_mask_backgroung_diff - Calculate the difference mask image between the current image and the background image.
 	*
 	* Parameters:
 	* @src1 ------ the background image
 	* @src2 ------ the current image
-	* @Imask ----- the output difference image which is  a mask image
+	* @Imask ----- the output difference image_t which is  a mask image
 	* @threshold - threshold value of binary
 	* Return:
 	* none
 	* Note:
 	* @1. src1 ,src2 and dst must have the same size and channel.
 	*/
-	extern void Mask_backgroung_diff(Image *src1, Image *src2, Image *Bmask, float threshold);
+	extern void image_mask_backgroung_diff(image_t *src1,
+		image_t *src2,
+		image_t *Bmask,
+		float threshold);
+
 
 	/**
-	* Entropy - Calculate the entropy of image.
+	* image_entropy - Calculate the entropy of image.
 	*
 	* Parameters:
 	* @img ------ the source image
 	* Return:
 	* the entropy value of image.
 	*/
-	extern float Entropy(Image *img);
+	extern float image_entropy(image_t *img);
 
+
+#define SSE
+#ifdef SSE
+	/**
+	* image_copy_sse - copy src to dst image,SSE version
+	*
+	* Parameters:
+	* @src - the source image
+	* @dst - the destination image
+	*
+	* Return:
+	* none
+	*
+	* Note:
+	* @1. The alloc size of @dst must  equal to the size of @src.
+	*/
+	extern void image_copy_sse(image_t * src, image_t * dst);
+
+
+	/**
+	* image_copy_sse1 - copy src to dst image,SSE version
+	*
+	* Parameters:
+	* @src - the imagedata of source image
+	* @dst - the imagedata of destination image
+	*
+	* Return:
+	* none
+	*
+	* Note:
+	* @1. The alloc size of @dst must  equal to the size of @src.
+	*/
+	extern void image_copy_sse1(void ** _src, void ** _dst);
+
+
+	/**
+	* image_crop_sse - crop rectangle on image,SSE version
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @dst  --- the output image After cropping
+	* @left  ----- the x-coordinate of left_top point of cropping image
+	* @top  ----- the y-coordinate of left_top point of cropping image
+	* @width  - the width of cropping image
+	* @height - the height of cropping image
+	*
+	* Return:
+	* none
+	*
+	* Note:
+	* @1. The range of @left is [0,src.width]
+	* @2. The range of @top is [0,src.height]
+	* @3. The range of @width is [0,src.width]
+	* @4. The range of @height is [0,src.height]
+	* @5. 0 <= left; left + width <= src.width;
+	* @6. 0 <= top; top + height <= src.height;
+	*/
+	extern void image_crop_sse(image_t *src,
+		image_t *dst,
+		int left,
+		int top,
+		int width,
+		int height);
+
+
+	/**
+	* image_crop_sse1 - crop rectangle on image,SSE version
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @dst  --- the output image after cropping
+	* @x  ----- the x-coordinate of left_top point of cropping image
+	* @top  ----- the y-coordinate of left_top point of cropping image
+	* @width  - the width of cropping image
+	* @height - the height of cropping image
+	*
+	* Return:
+	* none
+	*
+	* Note:
+	* @1. The range of @left is [0,src.width]
+	* @2. The range of @top is [0,src.height]
+	* @3. The range of @width is [0,src.width]
+	* @4. The range of @height is [0,src.height]
+	* @5. 0 <= left; left + width <= src.width;
+	* @6. 0 <= top; top + height <= src.height;
+	* @7. dst and src have the same size and channel
+	* @8. the effective pixel area is @width * @height in dst image.
+	*/
+	extern void image_crop_sse1(image_t *src,
+		image_t *dst,
+		int left,
+		int top,
+		int width,
+		int height);
+
+
+	/**
+	* image_warp_sse - warp the image,SSE version
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @dst  --- the output image after warping
+	*
+	* Return:
+	* none
+	*
+	*/
+	extern void image_warp_sse(image_t *src, image_t *dst);
+
+
+	/**
+	* image_warp_sse1 - warp the image,SSE version
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @dst  --- the output image after warping
+	* @src_width  --- the width of effective pixel in src image
+	* @src_height  --- the height of effective pixel in src image
+	* @dst_width  --- the width of effective pixel in dst image
+	* @dst_height  --- the height of effective pixel in dst image
+	* Return:
+	* none
+	*
+	* Note:
+	* @1.dst and src have the same size and channel .
+	* @2.src_width <= src->width,src_height <= src->height
+	* @3.dst_width <= dst->width,dst_height <= dst->height
+	*/
+	extern void image_warp_sse1(image_t *src,
+		image_t *dst,
+		int src_width,
+		int src_height,
+		int dst_width,
+		int dst_height);
+
+
+	/**
+	* image_interpolation_sse - Bilinear interpolation ,SSE version
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @uv  --- 4 float points after projection
+	* @pixel_value -- the unsigned char value of 16 pixels
+	* Return:
+	* none
+	*
+	* Note:
+	*@1.  point2_f32_t * uv is uv[4]
+	*@2. *pixel_value :(unsigned char) RGBRGBRGBRGB0000
+	*/
+	extern void image_interpolation_sse(image_t *src,
+		point2_f32_t * uv,
+		__m128i *pixel_value);
+
+
+	/**
+	* image_interpolation_sse1 - Bilinear interpolation ,SSE version
+	*
+	* Parameters:
+	* @src  --- the source image
+	* @uv  --- 4 float points after projection
+	* @pixel_value -- the unsigned char value of 16 pixels
+	* @src_width  --- the width of effective pixel in src image
+	* @src_height  --- the height of effective pixel in src image
+	* Return:
+	* none
+	*
+	* Note:
+	*@1.  point2_f32_t * uv is uv[4]
+	*@2. *pixel_value :(unsigned char) RGBRGBRGBRGB0000
+	*@3. src_width <= src->width,src_height <= src->height
+	*/
+	extern void image_interpolation_sse1(image_t *src,
+		int src_width,
+		int src_height,
+		point2_f32_t * uv,
+		__m128i  * pixel_value);
+
+
+#endif // SSE
 #define OPENCV
 #ifdef OPENCV
+
 #include <opencv/cv.h>
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/highgui/highgui_c.h> 
-
 	/**
-	* ipltoImage - convert the IplImage struct to Image struct.
+	* ipltoimage_t - convert the IplImage struct to image_t struct.
 	*
 	* Parameters:
-	* @src ------ the image which is IplImage type. 
-	* @dst ------ the image which is Image type.
+	* @src ------ the image which is IplImage type.
+	* @dst ------ the image which is image_t type.
 	* Return:
 	* none
 	*/
-	extern void ipltoImage(IplImage *src, Image *dst);
+	extern void ipltoimage_t(IplImage *src, image_t *dst);
+
 
 	/**
-	* Imagetoipl - convert the Image struct to IplImage struct.
+	* ipltoimage_t1 - convert the Iplimage_t struct to image_t struct.
 	*
 	* Parameters:
-	* @src ------ the image which is Image type.
+	* @src ------ the image which is Iplimage_t type.
+	* @dst ------ the imagedata of destination image.
+	* Return:
+	* none
+	*/
+	extern void ipltoimage_t1(IplImage *src, void **dst);
+
+
+	/**
+	* image_ttoipl - convert the image struct to IplImage struct.
+	*
+	* Parameters:
+	* @src ------ the image which is image type.
 	* @dst ------ the image which is IplImage type.
 	* Return:
 	* none
 	*/
-	extern void Imagetoipl(Image *src, IplImage *dst);
+	extern void image_ttoipl(image_t *src, IplImage *dst);
+
 
 	/**
 	* showimage - show the image in window.
 	*
 	* Parameters:
 	* @windowsname -- the windows name
-	* @src ------ the image which is Image type.
+	* @src ------ the image which is image_t type.
 	* @t --- waitkey time
 	* Return:
 	* none
 	*/
-	extern void showimage(char *windowsname, Image *src, int t);
+	extern void showimage(char *windowsname, image_t *src, int t);
+
 
 #endif 
-
-#define RECT
-#ifdef RECT
-#include "rectangle.h"
-
-
-#endif // RECT
 
 #ifdef __cplusplus
 }
