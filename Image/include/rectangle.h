@@ -7,7 +7,7 @@ extern "C" {
 #endif
 #define  MAX(a,b) ((a)>(b)?(a):(b))
 #define  MIN(a,b) ((a)<(b)?(a):(b))
-	typedef struct Rect_s {
+	typedef struct rect_s {
 		/* the x-coordinate location of the left side of the rectangle */
 		u16_t       x;
 
@@ -19,7 +19,7 @@ extern "C" {
 
 		/* the height of the rectangle */
 		u16_t       height;
-	} Rect_t,*Rect_pst;
+	} rect_t,*rect_pst;
 
 	/**
 	* rect_get_x - get the x-coordinate of the rectangle
@@ -30,7 +30,7 @@ extern "C" {
 	* Return:
 	* The x-coordinate of rectangle.
 	*/
-	static __inline u16_t rect_get_x(Rect_pst rect)
+	static __inline u16_t rect_get_x(rect_pst rect)
 	{
 		return rect->x;
 	}
@@ -45,7 +45,7 @@ extern "C" {
 	* Return:
 	* None
 	*/
-	static __inline void rect_set_x(Rect_pst rect, u16_t new_x)
+	static __inline void rect_set_x(rect_pst rect, u16_t new_x)
 	{
 		rect->x = new_x;
 	}
@@ -59,7 +59,7 @@ extern "C" {
 	* Return:
 	* The y-coordinate of rectangle.
 	*/
-	static __inline u16_t rect_get_y(Rect_pst rect)
+	static __inline u16_t rect_get_y(rect_pst rect)
 	{
 		return rect->y;
 	}
@@ -74,7 +74,7 @@ extern "C" {
 	* Return:
 	* None
 	*/
-	static __inline void rect_set_y(Rect_pst rect, u16_t new_y)
+	static __inline void rect_set_y(rect_pst rect, u16_t new_y)
 	{
 		rect->y = new_y;
 	}
@@ -88,7 +88,7 @@ extern "C" {
 	* Return:
 	* The width of rectangle.
 	*/
-	static __inline u16_t rect_get_width(Rect_pst rect)
+	static __inline u16_t rect_get_width(rect_pst rect)
 	{
 		return rect->width;
 	}
@@ -102,7 +102,7 @@ extern "C" {
 	* Return:
 	* None
 	*/
-	static __inline void rect_set_width(Rect_pst rect, u16_t new_width)
+	static __inline void rect_set_width(rect_pst rect, u16_t new_width)
 	{
 		rect->width = new_width;
 	}
@@ -116,7 +116,7 @@ extern "C" {
 	* Return:
 	* The height of rectangle.
 	*/
-	static __inline u16_t rect_get_height(Rect_pst rect)
+	static __inline u16_t rect_get_height(rect_pst rect)
 	{
 		return rect->height;
 	}
@@ -131,7 +131,7 @@ extern "C" {
 	* Return:
 	* None
 	*/
-	static __inline void rect_set_height(Rect_pst rect, u16_t new_height)
+	static __inline void rect_set_height(rect_pst rect, u16_t new_height)
 	{
 		rect->height = new_height;
 	}
@@ -149,7 +149,7 @@ extern "C" {
 	* Return:
 	* None
 	*/
-	static __inline rect_set(Rect_pst rect, u16_t x, u16_t y, u16_t width, u16_t height)
+	static __inline rect_set(rect_pst rect, u16_t x, u16_t y, u16_t width, u16_t height)
 	{
 		rect->x = x;
 		rect->y = y;
@@ -166,7 +166,7 @@ extern "C" {
 	* Return:
 	* The area of the rect.
 	*/
-	extern u32_t rect_area(Rect_pst rect);
+	extern u32_t rect_area(rect_pst rect);
 
 	/**
 	* rect_overlap_area - get the area of the overlap of two rects
@@ -178,7 +178,7 @@ extern "C" {
 	* Return:
 	* The area of the overlap of two rects.
 	*/
-	extern u32_t rect_overlap_area(Rect_pst rect_a, Rect_pst rect_b);
+	extern u32_t rect_overlap_area(rect_pst rect_a, rect_pst rect_b);
 
 	/**
 	* rect_overlap_rate - get the overlap rate of two rect
@@ -190,7 +190,7 @@ extern "C" {
 	* Return:
 	* The overlap rate of the overlap area over @rect_b.
 	*/
-	extern u32_t rect_overlap_rate(Rect_pst rect_a, Rect_pst rect_b);
+	extern u32_t rect_overlap_rate(rect_pst rect_a, rect_pst rect_b);
 
 	/**
 	* rect_contains - detect whether the rectangle contains the point
@@ -202,7 +202,7 @@ extern "C" {
 	* Return:
 	* 1 for contains, 0 for not.
 	*/
-	extern int rect_contains(Rect_pst  rect, Point2_pst pt);
+	extern int rect_contains(rect_pst  rect, point2_pst pt);
 
 	/**
 	* rect_contains_f32 - detect whether the rectangle contains the point
@@ -214,6 +214,6 @@ extern "C" {
 	* Return:
 	* 1 for contains, 0 for not.
 	*/
-	extern int rect_contains_f32(Rect_pst  rect, Point2_f32_pst pt);
+	extern int rect_contains_f32(rect_pst  rect, point2_f32_pst pt);
 
 #endif
